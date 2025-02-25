@@ -3,15 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Access Forbidden</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Interactive Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 60%;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .interactive-elements {
+            margin-top: 30px;
+        }
+    </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-box">
-            <h2>Access Forbidden</h2>
-            <p>You don't have permission to access this page.</p>
-        </div>
-    </div>
+
+<div class="container">
+    <h1>Welcome to the Interactive Website</h1>
+    <button class="btn" onclick="initializeRUM()">Initialize RUM</button>
+    <button class="btn" onclick="triggerBase404()">Trigger Base URL 404</button>
+</div>
+
+<script>
+    let rumInitialized = false;
+
+    function initializeRUM() {
+        if (!rumInitialized) {
+            let script = document.createElement("script");
+            script.src = "https://g.3gl.net/jp/12603/latest/InitialLoadScript.js";
+            script.defer = true;
+            script.onload = function () {
+                if (window.RUM) {
+                    console.log("✅ RUM Loaded Successfully!");
+                    rumInitialized = true;
+                } else {
+                    console.error("❌ RUM failed to load!");
+                }
+            };
+            document.head.appendChild(script);
+        } else {
+            console.log("⚠️ RUM already initialized!");
+        }
+    }
+
+    function triggerBase404() {
+        if (!rumInitialized) {
+            console.warn("⚠️ RUM not initialized. Initializing now...");
+            initializeRUM();
+        }
+        fetch(window.location.origin + "/nonexistent-page")
+            .then(response => {
+                if (!response.ok) {
+                    console.error("404 Error Detected:", response.url);
+                    if (window.RUM && typeof window.RUM.trackEvent === "function") {
+                        window.RUM.trackEvent("error", { url: response.url, status: response.status });
+                        console.log("📡 Sent to RUM: 404 Error", response.url);
+                    }
+                }
+            })
+            .catch(error => console.error("Fetch error:", error));
+    }
+</script>
+
 </body>
 </html>
