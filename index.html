@@ -32,15 +32,12 @@
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
+            margin: 10px;
             transition: background-color 0.3s;
         }
 
         .btn:hover {
             background-color: #0056b3;
-        }
-
-        .interactive-elements {
-            margin-top: 30px;
         }
     </style>
 </head>
@@ -48,9 +45,7 @@
 
 <div class="container">
     <h1>Welcome to the Interactive Website</h1>
-    <button class="btn" onclick="initializeRUM()">Initialize RUM</button>
-    <button class="btn" onclick="triggerBase404()">Trigger Base URL 404</button>
-    <button class="btn" onclick="simulateUserAction()">Simulate User Action</button>
+    <button class="btn" onclick="triggerPageGroupAndAllocation()">Trigger PageGroup & Allocation</button>
 </div>
 
 <script>
@@ -80,46 +75,34 @@
         if (window.RProfiler) {
             console.log("✅ RProfiler Initialized!");
 
-            // Add custom insights
+            // Send userloggedin and userid when the page loads
             window.RProfiler.addInfo('tracepoint', 'userloggedin', 'A760827');
             window.RProfiler.addInfo('tracepoint', 'userid', 'A760827');
 
-            console.log("📡 RProfiler tracepoints added");
+            console.log("📡 Sent to RProfiler: User Logged In & User ID Set");
         } else {
             console.warn("⚠️ RProfiler not found!");
         }
     }
 
-    function triggerBase404() {
-        if (!rumInitialized) {
-            console.warn("⚠️ RUM not initialized. Initializing now...");
-            initializeRUM();
-        }
-        fetch(window.location.origin + "/nonexistent-page")
-            .then(response => {
-                if (!response.ok) {
-                    console.error("404 Error Detected:", response.url);
-                    if (window.RUM && typeof window.RUM.trackEvent === "function") {
-                        window.RUM.trackEvent("error", { url: response.url, status: response.status });
-                        console.log("📡 Sent to RUM: 404 Error", response.url);
-                    }
-                }
-            })
-            .catch(error => console.error("Fetch error:", error));
-    }
-
-    function simulateUserAction() {
+    function triggerPageGroupAndAllocation() {
         if (!rumInitialized || !window.RProfiler) {
             console.warn("⚠️ RUM or RProfiler not initialized.");
             return;
         }
 
-        // Simulating user action triggering an allocation rule event
         let allocationRule = `rule - ${Math.random().toString(36).substring(7)}`;
+
+        // Send pageGroup, userid, and createallocation together
+        window.RProfiler.addInfo('pageGroup', 'allocationrules');
+        window.RProfiler.addInfo('tracepoint', 'userid', 'A760827');
         window.RProfiler.addInfo('tracepoint', 'createallocation', allocationRule);
 
-        console.log(`📡 Sent to RProfiler: createallocation - ${allocationRule}`);
+        console.log("📡 Sent to RProfiler: PageGroup, UserID & Create Allocation", allocationRule);
     }
+
+    // Initialize RUM when page loads
+    window.onload = initializeRUM;
 </script>
 
 </body>
