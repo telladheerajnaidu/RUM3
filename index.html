@@ -50,7 +50,7 @@
 
 <script>
     let rumInitialized = false;
-
+    
     function initializeRUM() {
         if (!rumInitialized) {
             let script = document.createElement("script");
@@ -60,7 +60,7 @@
                 if (window.RUM) {
                     console.log("✅ RUM Loaded Successfully!");
                     rumInitialized = true;
-                    initializeRProfiler();
+                    waitForRProfiler(initializeRProfiler);
                 } else {
                     console.error("❌ RUM failed to load!");
                 }
@@ -68,6 +68,18 @@
             document.head.appendChild(script);
         } else {
             console.log("⚠️ RUM already initialized!");
+        }
+    }
+
+    function waitForRProfiler(callback, retries = 10) {
+        if (window.RProfiler) {
+            console.log("✅ RProfiler is ready.");
+            callback();
+        } else if (retries > 0) {
+            console.warn(`⏳ Waiting for RProfiler... Retries left: ${retries}`);
+            setTimeout(() => waitForRProfiler(callback, retries - 1), 500);
+        } else {
+            console.error("❌ RProfiler did not load in time.");
         }
     }
 
@@ -79,11 +91,11 @@
             window.RProfiler.addInfo('tracepoint', 'userloggedin', 'A760827');
             window.RProfiler.addInfo('tracepoint', 'userid', 'A760827');
 
-            // Force an `r.p` call immediately
-            window.RProfiler.sendNow();
-            console.log("📡 Sent to RProfiler: User Logged In & User ID Set");
-        } else {
-            console.warn("⚠️ RProfiler not found!");
+            // Ensure data is sent immediately
+            setTimeout(() => {
+                console.log("📡 Sending RProfiler Data (User Logged In & User ID)");
+                window.RProfiler.sendNow();
+            }, 1000);
         }
     }
 
@@ -100,10 +112,10 @@
         window.RProfiler.addInfo('tracepoint', 'userid', 'A760827');
         window.RProfiler.addInfo('tracepoint', 'createallocation', allocationRule);
 
-        // Immediately send collected data
-        window.RProfiler.sendNow();
+        console.log("📡 Sending RProfiler Data (PageGroup, UserID & Create Allocation)");
 
-        console.log("📡 Sent to RProfiler: PageGroup, UserID & Create Allocation", allocationRule);
+        // Ensure data is sent immediately
+        setTimeout(() => window.RProfiler.sendNow(), 1000);
     }
 
     // Initialize RUM when page loads
