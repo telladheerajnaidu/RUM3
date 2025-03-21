@@ -51,24 +51,31 @@
 <script>
     let rumInitialized = false;
     
-    function initializeRUM() {
-        if (!rumInitialized) {
-            let script = document.createElement("script");
-            script.src = "https://g.3gl.net/jp/12603/latest/InitialLoadScript.js";
-            script.defer = true;
-            script.onload = function () {
-                if (window.RUM) {
-                    console.log("✅ RUM Loaded Successfully!");
-                    rumInitialized = true;
-                    waitForRProfiler(initializeRProfiler);
-                } else {
-                    console.error("❌ RUM failed to load!");
-                }
-            };
-            document.head.appendChild(script);
-        } else {
-            console.log("⚠️ RUM already initialized!");
+    function loadRUMScript(callback, retries = 5) {
+        if (retries === 0) {
+            console.error("❌ Failed to load RUM after multiple attempts.");
+            return;
         }
+
+        let script = document.createElement("script");
+        script.src = "https://g.3gl.net/jp/12603/latest/InitialLoadScript.js";
+        script.defer = true;
+        script.onload = function () {
+            if (window.RUM) {
+                console.log("✅ RUM Loaded Successfully!");
+                rumInitialized = true;
+                waitForRProfiler(initializeRProfiler);
+            } else {
+                console.warn(`⚠️ RUM script loaded but not initialized. Retrying... (${retries - 1} attempts left)`);
+                setTimeout(() => loadRUMScript(callback, retries - 1), 2000);
+            }
+        };
+        script.onerror = function () {
+            console.error("❌ Failed to load RUM script. Retrying...");
+            setTimeout(() => loadRUMScript(callback, retries - 1), 2000);
+        };
+
+        document.head.appendChild(script);
     }
 
     function waitForRProfiler(callback, retries = 10) {
@@ -91,7 +98,6 @@
             window.RProfiler.addInfo('tracepoint', 'userloggedin', 'A760827');
             window.RProfiler.addInfo('tracepoint', 'userid', 'A760827');
 
-            // Ensure data is sent immediately
             setTimeout(() => {
                 console.log("📡 Sending RProfiler Data (User Logged In & User ID)");
                 window.RProfiler.sendNow();
@@ -119,7 +125,10 @@
     }
 
     // Initialize RUM when page loads
-    window.onload = initializeRUM;
+    window.onload = function () {
+        console.log("🟢 Loading RUM...");
+        loadRUMScript();
+    };
 </script>
 
 </body>
