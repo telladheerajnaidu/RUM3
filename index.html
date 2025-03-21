@@ -75,10 +75,12 @@
         if (window.RProfiler) {
             console.log("✅ RProfiler Initialized!");
 
-            // Send userloggedin and userid when the page loads
+            // Send userloggedin and userid on page load
             window.RProfiler.addInfo('tracepoint', 'userloggedin', 'A760827');
             window.RProfiler.addInfo('tracepoint', 'userid', 'A760827');
 
+            // Force an `r.p` call immediately
+            window.RProfiler.sendNow();
             console.log("📡 Sent to RProfiler: User Logged In & User ID Set");
         } else {
             console.warn("⚠️ RProfiler not found!");
@@ -97,6 +99,9 @@
         window.RProfiler.addInfo('pageGroup', 'allocationrules');
         window.RProfiler.addInfo('tracepoint', 'userid', 'A760827');
         window.RProfiler.addInfo('tracepoint', 'createallocation', allocationRule);
+
+        // Immediately send collected data
+        window.RProfiler.sendNow();
 
         console.log("📡 Sent to RProfiler: PageGroup, UserID & Create Allocation", allocationRule);
     }
