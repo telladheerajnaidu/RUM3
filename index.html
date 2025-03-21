@@ -50,6 +50,7 @@
     <h1>Welcome to the Interactive Website</h1>
     <button class="btn" onclick="initializeRUM()">Initialize RUM</button>
     <button class="btn" onclick="triggerBase404()">Trigger Base URL 404</button>
+    <button class="btn" onclick="simulateUserAction()">Simulate User Action</button>
 </div>
 
 <script>
@@ -64,6 +65,7 @@
                 if (window.RUM) {
                     console.log("✅ RUM Loaded Successfully!");
                     rumInitialized = true;
+                    initializeRProfiler();
                 } else {
                     console.error("❌ RUM failed to load!");
                 }
@@ -71,6 +73,20 @@
             document.head.appendChild(script);
         } else {
             console.log("⚠️ RUM already initialized!");
+        }
+    }
+
+    function initializeRProfiler() {
+        if (window.RProfiler) {
+            console.log("✅ RProfiler Initialized!");
+
+            // Add custom insights
+            window.RProfiler.addInfo('tracepoint', 'userloggedin', 'A760827');
+            window.RProfiler.addInfo('tracepoint', 'userid', 'A760827');
+
+            console.log("📡 RProfiler tracepoints added");
+        } else {
+            console.warn("⚠️ RProfiler not found!");
         }
     }
 
@@ -90,6 +106,19 @@
                 }
             })
             .catch(error => console.error("Fetch error:", error));
+    }
+
+    function simulateUserAction() {
+        if (!rumInitialized || !window.RProfiler) {
+            console.warn("⚠️ RUM or RProfiler not initialized.");
+            return;
+        }
+
+        // Simulating user action triggering an allocation rule event
+        let allocationRule = `rule - ${Math.random().toString(36).substring(7)}`;
+        window.RProfiler.addInfo('tracepoint', 'createallocation', allocationRule);
+
+        console.log(`📡 Sent to RProfiler: createallocation - ${allocationRule}`);
     }
 </script>
 
